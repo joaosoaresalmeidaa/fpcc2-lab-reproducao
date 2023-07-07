@@ -1,0 +1,366 @@
+---
+title: "Reproducão: Towards Automating Code Review Activities"
+author: "João Victor Soares de Almeida"
+date: "02/07/2023"
+output: 
+  html_document: 
+    code_download: true
+    toc: true
+    toc_depth: 2
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(knitr)
+library(kableExtra)
+library(textTinyR)
+```
+
+# Towards Automating Code Review Activities
+
+## 1. Introduction
+
+O artigo "Towards Automating Code Review Activities" aborda a automação das atividades de revisão de código como um meio de melhorar a eficiência e a qualidade dos processos de desenvolvimento de software. Os autores enfatizam a importância da revisão de código como uma prática fundamental para identificar erros, melhorar a qualidade do código e compartilhar conhecimento entre os membros da equipe de desenvolvimento. As revisões de código desempenham um papel crucial tanto na indústria quanto em projetos de código aberto, com benefícios amplamente reconhecidos, como melhoria da qualidade do código e redução da probabilidade de introdução de bugs. No entanto, esse processo manual requer que os desenvolvedores dediquem tempo revisando o código de seus colegas de equipe.
+
+O objetivo do estudo em questão é dar o primeiro passo para automatizar parcialmente o processo de revisão de código, a fim de reduzir os custos associados a essa atividade. Os pesquisadores se concentraram nas perspectivas do colaborador e do revisor, treinando duas arquiteturas de Deep Learning distintas. O primeiro modelo aprende as alterações de código realizadas pelos desenvolvedores durante as atividades reais de revisão de código, fornecendo ao colaborador uma versão revisada de seu código antes mesmo de ser submetido à revisão. Essa versão incorpora as transformações de código geralmente recomendadas durante as revisões. O segundo modelo fornece automaticamente ao revisor comentários sobre um código submetido, implementando os comentários expressos em linguagem natural por meio de modificações no código.
+
+## 2. Data and methods
+
+### 2.1. Data
+
+Para obtenção dos dados, os autores seguiram alguns passos, abaixo descreveremos de forma breve o processo:
+
+#### Dados de revisão do código de mineração
+
+Nessa seção, o autor descreve o processo de mineração de dados de revisão de código no Gerrit e no GitHub. O objetivo desse processo de mineração é coletar todas as informações que representam as rodadas de revisão de código realizadas no Gerrit e no GitHub.
+
+Para realizar essa tarefa, foram desenvolvidas duas ferramentas de mineração específicas para consultar sistematicamente as APIs públicas do Gerrit e do GitHub. Essa implementação dupla é necessária porque, embora ambas as plataformas forneçam suporte semelhante para revisão de código, as APIs públicas usadas para recuperar os dados são diferentes.
+
+![](fluxo.png)
+
+A saída deste processo é representada, para cada revisão rodada, por **(i)** o conjunto de arquivos de código enviados para revisão, **(ii)** os comentários recebidos neste código arquivos com informações sobre as linhas impactadas específicas (informações em nível de personagem está disponível para Gerrit), e **(iii)** os arquivos de código revisados ​​enviados em resposta aos comentários recebidos. [1]
+
+#### Pré-processamento de dados
+
+Nessa etapa de pré-processamento de dados, o autor descreve os seguintes processos:
+
+1.  **Extração e Abstração de Métodos**: Os arquivos Java envolvidos no processo de revisão são analisados usando a biblioteca Python Lizard. O objetivo dessa etapa é extrair os métodos de todos os arquivos. Em seguida, é adotado um processo de abstração para obter uma representação expressiva, mas limitada em vocabulário, do código-fonte. Esse processo de abstração é realizado usando a ferramenta src2abs e mapeia os tokens abstraídos aos tokens originais, permitindo voltar ao código-fonte original.
+
+2.  **Vinculação e Abstração de Comentários dos Revisores**: Cada comentário do revisor é associado às linhas de código específicas às quais se refere. Os comentários são vinculados a um método se as linhas de início e fim do comentário estiverem dentro do corpo, da assinatura ou das anotações desse método. Os comentários que não podem ser vinculados a nenhum método são descartados. Além disso, os componentes de código mencionados nos comentários são abstraídos usando o mapa de abstração obtido na etapa anterior.
+
+3.  **Filtragem de Comentários Ruidosos**: Uma inspeção manual dos dados de revisão de código coletados revelou que uma porcentagem significativa de comentários de código coletados não resultaria em alterações de código e, portanto, não eram relevantes para o estudo. Para lidar com isso, os comentários foram manualmente classificados como relevantes ou irrelevantes. Em seguida, foram testadas abordagens baseadas em aprendizado de máquina para classificar automaticamente os comentários. Foram experimentados três modelos diferentes (Random Forest, J48 e Rede Bayesiana), e o melhor modelo foi selecionado com base em sua precisão na classificação dos comentários relevantes. Além disso, foram definidas heurísticas baseadas em palavras-chave para remover comentários irrelevantes.
+
+Após esses processos, o autor obteve conjuntos de tripelas **(hms, rnli → mr)** e pares **(ms → mr)** que serão utilizados nos modelos de aprendizado profundo. As tripletas representam um método antes da revisão **(ms)**, os comentários dos revisores **(rnli)** e o método revisado **(mr)**, enquanto os pares representam apenas o método antes e depois da revisão. Comentários irrelevantes e ruidosos foram removidos para minimizar o ruído fornecido aos modelos de aprendizado profundo.
+
+#### Automatizando a Revisão de Código
+
+Nessa etapa de automatização da revisão, o autor descreve os seguintes processos:
+
+**Preparação do conjunto de dados**:
+
+-   Comentários ruidosos são removidos das tripletas coletadas.
+
+-   Tripletas contendo comentários de código postados pelo contribuidor são removidos.
+
+-   Tripletas com comentários de código vinculados a linhas no método relacionado são removidos.
+
+-   Tripletas com código pré e pós-revisão idênticos são removidos.
+
+-   Tripletas com código pré ou pós-revisão excessivamente longo são removidos.
+
+-   Tripletas que introduzem identificadores ou literais não presentes no código pré-revisão são removidos.
+
+-   Tripletas com múltiplos comentários no comentário do revisor são removidos.
+
+-   Etapas de pré-processamento são aplicadas ao comentário do revisor, como remoção de stopwords e links, limpeza de pontuação e transformação de palavras não relacionadas a código para minúsculas.
+
+-   Tripletas duplicados são removidos.
+
+-   Os Tripletas restantes são divididos nos conjuntos de treinamento, avaliação e teste.
+
+**Cenário 1: Recomendação de Mudanças (1-encoder)**:
+
+-   Um modelo de transformer com um codificador e um decodificador é treinado.
+
+-   O codificador recebe a sequência de código pré-revisão como entrada, e o decodificador gera sugestões para o código pós-revisão.
+
+-   É realizada uma busca por hiperparâmetros para encontrar a melhor configuração para o modelo.
+
+**Cenário 2: Implementação de Mudanças Recomendadas pelo Revisor (2-encoder):**
+
+-   Um modelo de transformer com dois codificadores e um decodificador é treinado.
+
+-   Os codificadores recebem a sequência de código pré-revisão e a sequência de comentários do revisor como entrada, respectivamente, e o decodificador gera sugestões para o código pós-revisão.
+
+-   É realizada uma busca por hiperparâmetros para encontrar a melhor configuração para o modelo.
+
+**Busca por Hiperparâmetros**:
+
+-   Estratégia de **Otimização Bayesiana** é usada para buscar as melhores configurações de hiperparâmetros.
+
+-   Um espaço de possíveis configurações é definido, e o algoritmo Tree Parzen Estimator (TPE) é usado para otimização.
+
+-   Cada configuração é treinada e avaliada, e o número de previsões perfeitas no conjunto de avaliação é usado como métrica de otimização.
+
+**Geração de Múltiplas Soluções via Beam Search**:
+
+-   A melhor configuração para cada modelo é selecionada.
+
+-   A estratégia de decodificação Beam Search é aplicada para gerar múltiplas hipóteses para uma determinada entrada.
+
+-   São experimentados tamanhos de beam (feixe) de 1, 3, 5 e 10 para explorar o espaço de possíveis hipóteses.
+
+Esses procedimentos visam automatizar o processo de revisão de código, treinando modelos de transformer para sugerir mudanças no código com base nos comentários do revisor e gerar exemplos práticos das modificações de código desejadas.
+
+## 3. Leitura dos arquivos gerados
+
+Abaixo iremos realizar a leitura dos arquivos gerados, após realizar o treinamento do modelo.
+
+```{r}
+predict_k1_raw <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k1_raw.txt"
+predict_k1_abstract <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k1_abstracted.txt"
+
+data_k1_raw <- read.table(predict_k1_raw, sep = "\t", header = FALSE)
+data_k1_abstract <- read.table(predict_k1_abstract, sep = "\t", header = FALSE)
+
+
+response_k1_raw <- summary(data_k1_raw)
+response_k1_abstract <- summary(data_k1_abstract)
+
+response_k1_raw
+response_k1_abstract
+
+predict_k3_raw <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k3_raw.txt"
+predict_k3_abstract <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k3_abstracted.txt"
+
+data_k3_raw <- read.table(predict_k3_raw, sep = "\t", header = FALSE)
+data_k3_abstract <- read.table(predict_k3_abstract, sep = "\t", header = FALSE)
+
+
+response_k3_raw <- summary(data_k3_raw)
+response_k3_abstract <- summary(data_k3_abstract)
+
+response_k3_raw
+response_k3_abstract
+
+
+predict_k5_raw <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k5_raw.txt"
+predict_k5_abstract <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k5_abstracted.txt"
+
+data_k5_raw <- read.table(predict_k5_raw, sep = "\t", header = FALSE)
+data_k5_abstract <- read.table(predict_k5_abstract, sep = "\t", header = FALSE)
+
+
+response_k5_raw <- summary(data_k5_raw)
+response_k5_abstract <- summary(data_k5_abstract)
+
+response_k5_raw
+response_k5_abstract
+
+
+predict_k10_raw <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k10_raw.txt"
+predict_k10_abstract <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/1-encoder/predictions_k10_abstracted.txt"
+
+data_k10_raw <- read.table(predict_k10_raw, sep = "\t", header = FALSE)
+data_k10_abstract <- read.table(predict_k10_abstract, sep = "\t", header = FALSE)
+
+
+response_k10_raw <- summary(data_k10_raw)
+response_k10_abstract <- summary(data_k10_abstract)
+
+print(response_k10_raw, row.names = FALSE)
+print(response_k10_abstract, row.names = FALSE)
+```
+
+### 2.2. Methods
+
+**150 words**
+
+Describe what methods were used in the original paper and what methods you used and why.
+
+If suitable, embedd statistical tests comparing model fit of both methods.
+
+```{r}
+calculate_bleu_score <- function(reference, candidate) {
+  # Função para calcular a pontuação BLEU-4
+  # Parâmetros:
+  # - reference: Vetor de referência de palavras
+  # - candidate: Vetor de candidatos de palavras
+  # Retorna a pontuação BLEU-4
+  
+  reference_ngrams <- list()
+  candidate_ngrams <- list()
+  
+  # Tamanho do n-grama
+  n <- 4
+  
+  # Calcular n-gramas de referência
+  for (i in 1:(length(reference)-(n-1))) {
+    ngram <- paste(reference[i:(i+(n-1))], collapse = " ")
+    if (!is.null(reference_ngrams[[ngram]])) {
+      reference_ngrams[[ngram]] <- reference_ngrams[[ngram]] + 1
+    } else {
+      reference_ngrams[[ngram]] <- 1
+    }
+  }
+  
+  # Calcular n-gramas do candidato e contar correspondências
+  for (i in 1:(length(candidate)-(n-1))) {
+    ngram <- paste(candidate[i:(i+(n-1))], collapse = " ")
+    if (!is.null(candidate_ngrams[[ngram]])) {
+      candidate_ngrams[[ngram]] <- candidate_ngrams[[ngram]] + 1
+    } else {
+      candidate_ngrams[[ngram]] <- 1
+    }
+  }
+  
+  # Calcular a precisão para cada n-grama
+  precisions <- rep(0, n)
+  for (i in 1:n) {
+    num_matches <- 0
+    num_candidates <- sum(unlist(candidate_ngrams))
+    
+    for (key in names(candidate_ngrams)) {
+      candidate_count <- candidate_ngrams[[key]]
+      reference_count <- reference_ngrams[[key]]
+      if (!is.null(reference_count)) {
+        num_matches <- num_matches + min(candidate_count, reference_count)
+      }
+    }
+    
+    precisions[i] <- num_matches / num_candidates
+    
+    # Reduzir contagens de n-gramas para o próximo cálculo
+    for (key in names(candidate_ngrams)) {
+      candidate_ngrams[[key]] <- candidate_ngrams[[key]] - 1
+      if (candidate_ngrams[[key]] == 0) {
+        candidate_ngrams[[key]] <- NULL
+      }
+    }
+  }
+  
+  # Calcular a pontuação BLEU
+  geometric_mean <- prod(precisions) ^ (1/n)
+  brevity_penalty <- exp(1 - (length(reference) / length(candidate)))
+  bleu_score <- brevity_penalty * geometric_mean
+  
+  return(bleu_score)
+}
+```
+
+```{r}
+# Criação de vetores vazios para armazenar as pontuações BLEU
+bleu_scores <- c()
+
+# Percorre as linhas dos dataframes de referência e candidato
+for (i in 1:nrow(data_k1_raw)) {
+  # Extrai as sentenças de referência e candidato
+  reference_sentence <- unlist(strsplit(as.character(data_k1_raw[i, ]), " "))
+  candidate_sentence <- unlist(strsplit(as.character(data_k1_abstract[i, ]), " "))
+  
+  # Calcula a pontuação BLEU e adiciona ao vetor de pontuações
+  bleu <- calculate_bleu_score(reference_sentence, candidate_sentence)
+  bleu_scores <- c(bleu_scores, bleu)
+}
+
+
+average_bleu <- mean(bleu_scores, na.rm = TRUE)
+median_bleu <- median(bleu_scores, na.rm = TRUE)
+sd_bleu <- sd(bleu_scores, na.rm = TRUE)
+
+cat("Pontuação média do BLEU-4:", average_bleu, "\n")
+cat("Mediana do BLEU-4:", median_bleu, "\n")
+cat("Desvio padrão do BLEU-4:", sd_bleu, "\n")
+```
+
+```{r}
+# Função para calcular o BLEU-4 e imprimir as estatísticas
+calculate_and_print_bleu_stats <- function(reference_data, candidate_data) {
+  # Criação de vetor para armazenar as pontuações BLEU
+  bleu_scores <- c()
+  
+  # Percorre as linhas dos dataframes de referência e candidato
+  for (i in 1:nrow(reference_data)) {
+    # Extrai as sentenças de referência e candidato
+    reference_sentence <- unlist(strsplit(as.character(reference_data[i, 1]), " "))
+    candidate_sentence <- unlist(strsplit(as.character(candidate_data[i, 1]), " "))
+    
+    # Calcula a pontuação BLEU e adiciona ao vetor de pontuações
+    bleu <- calculate_bleu_score(reference_sentence, candidate_sentence)
+    bleu_scores <- c(bleu_scores, bleu)
+  }
+  
+  # Calcula a média, mediana e desvio padrão do BLEU-4
+  average_bleu <- mean(bleu_scores, na.rm = TRUE)
+  median_bleu <- median(bleu_scores, na.rm = TRUE)
+  sd_bleu <- sd(bleu_scores, na.rm = TRUE)
+  
+  # Imprime as estatísticas do BLEU-4
+  cat("Pontuação média do BLEU-4:", average_bleu, "\n")
+  cat("Mediana do BLEU-4:", median_bleu, "\n")
+  cat("Desvio padrão do BLEU-4:", sd_bleu, "\n")
+}
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k1_raw e data_k1_abstract
+cat("Estatísticas para data_k1_raw e data_k1_abstract:\n")
+calculate_and_print_bleu_stats(data_k1_raw, data_k1_abstract)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k3_raw e data_k3_abstract
+cat("Estatísticas para data_k3_raw e data_k3_abstract:\n")
+calculate_and_print_bleu_stats(data_k3_raw, data_k3_abstract)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k5_raw e data_k5_abstract
+cat("Estatísticas para data_k5_raw e data_k5_abstract:\n")
+calculate_and_print_bleu_stats(data_k5_raw, data_k5_abstract)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k10_raw e data_k10_abstract
+cat("Estatísticas para data_k10_raw e data_k10_abstract:\n")
+calculate_and_print_bleu_stats(data_k10_raw, data_k10_abstract)
+cat("\n")
+```
+
+## 3. Results
+
+**500 words**
+
+Display and describe your research results step by step.
+
+Show code and outputs.
+
+Provide interpretation of your results.
+
+## 4. Conclusions
+
+**200 words**
+
+Dicuss you findings in the light of literature.
+
+Reflect why your resutls are similar/different from the original study.
+
+## References
+
+**min. 5 scietific references, excluding the replicated paper**
+
+Freese, J., & Peterson, D. (2017). Replication in social science. *Annual Review of Sociology*, 43, 147-165, [doi: 10.1146](https://www.annualreviews.org/doi/abs/10.1146/annurev-soc-060116-053450).
+
+## Appendix
+
+### Appendix 1
+
+Appendices can be used to display any additional information or results which do not constitute the core analysis in your paper.
