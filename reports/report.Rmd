@@ -19,6 +19,7 @@ library(readr)
 library(knitr)
 library(kableExtra)
 library(textTinyR)
+library(stringdist)
 ```
 
 # Towards Automating Code Review Activities
@@ -117,7 +118,7 @@ Nessa etapa de automatização da revisão, o autor descreve os seguintes proces
 
 Esses procedimentos visam automatizar o processo de revisão de código, treinando modelos de transformer para sugerir mudanças no código com base nos comentários do revisor e gerar exemplos práticos das modificações de código desejadas.
 
-## 3. Leitura dos arquivos gerados
+### 2.2. Leitura dos arquivos gerados
 
 Abaixo iremos realizar a leitura dos arquivos gerados, após realizar o treinamento do modelo.
 
@@ -177,13 +178,93 @@ print(response_k10_raw, row.names = FALSE)
 print(response_k10_abstract, row.names = FALSE)
 ```
 
-### 2.2. Methods
+```{r}
+predict_k1_raw_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k1_raw.txt"
+predict_k1_abstract_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k1_abstracted.txt"
 
-**150 words**
+data_k1_raw_2 <- read.table(predict_k1_raw_2, sep = "\t", header = FALSE)
+data_k1_abstract_2 <- read.table(predict_k1_abstract_2, sep = "\t", header = FALSE)
 
-Describe what methods were used in the original paper and what methods you used and why.
 
-If suitable, embedd statistical tests comparing model fit of both methods.
+response_k1_raw_2 <- summary(data_k1_raw_2)
+response_k1_abstract_2 <- summary(data_k1_abstract_2)
+
+response_k1_raw_2
+response_k1_abstract_2
+
+predict_k3_raw_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k3_raw.txt"
+predict_k3_abstract_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k3_abstracted.txt"
+
+data_k3_raw_2 <- read.table(predict_k3_raw_2, sep = "\t", header = FALSE)
+data_k3_abstract_2 <- read.table(predict_k3_abstract_2, sep = "\t", header = FALSE)
+
+
+response_k3_raw_2 <- summary(data_k3_raw_2)
+response_k3_abstract_2 <- summary(data_k3_abstract_2)
+
+response_k3_raw_2
+response_k3_abstract_2
+
+
+predict_k5_raw_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k5_raw.txt"
+predict_k5_abstract_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k5_abstracted.txt"
+
+data_k5_raw_2 <- read.table(predict_k5_raw_2, sep = "\t", header = FALSE)
+data_k5_abstract_2 <- read.table(predict_k5_abstract_2, sep = "\t", header = FALSE)
+
+
+response_k5_raw_2 <- summary(data_k5_raw_2)
+response_k5_abstract_2 <- summary(data_k5_abstract_2)
+
+response_k5_raw_2
+response_k5_abstract_2
+
+
+predict_k10_raw_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k10_raw.txt"
+predict_k10_abstract_2 <- "/Users/joaosoaresalmeida/Documents/POSGRAD/FPCC2/analyses/2-encoder/predictions_k10_abstracted.txt"
+
+data_k10_raw_2 <- read.table(predict_k10_raw_2, sep = "\t", header = FALSE)
+data_k10_abstract_2 <- read.table(predict_k10_abstract_2, sep = "\t", header = FALSE)
+
+
+response_k10_raw_2 <- summary(data_k10_raw_2)
+response_k10_abstract_2 <- summary(data_k10_abstract_2)
+
+print(response_k10_raw_2, row.names = FALSE)
+print(response_k10_abstract_2, row.names = FALSE)
+```
+
+### 2.3. Métodos
+
+Para reproduzir o estudo, foi necessário configurar o projeto em minha máquina e seguir as etapas:
+
+1.  Configuração do arquivo **data.yml**: Ajustei as configurações do arquivo *data.yml* de acordo com os melhores hiperparâmetros sugeridos no **artigo** original.
+
+2.  Execução do script de treinamento: Na pasta "**1-encoder**", executei o script *training.py*. Esse script é responsável pelo treinamento do modelo com os dados fornecidos.
+
+3.  Geração da pasta "**run**": Após o treinamento, uma pasta chamada "run" foi gerada. Essa pasta contém os dados e informações relevantes para o treinamento realizado.
+
+4.  Em seguida, executamos o script *infer.py* para gerar os arquivos de predições.
+
+Essas mesmas etapas foram utilizadas para a pasta **2-encoder**. Abaixo ilustraremos o que os scripts fazem.
+
+![](images/Captura%20de%20Tela%202023-07-07%20a%CC%80s%2012.39.50.png)
+
+Aqui estão os passos específicos desse pré-processamento:
+
+1.  **Extração e Abstração dos Métodos**: O processo começa analisando os arquivos Java envolvidos no processo de revisão, tanto aqueles submetidos para revisão quanto aqueles que implementam os comentários da revisão de código. Essa análise é feita utilizando a biblioteca Python chamada Lizard[1], com o objetivo de extrair os métodos presentes nos arquivos. É importante ressaltar que os modelos de aprendizado profundo utilizados neste estudo operam em nível de granularidade de métodos. Após essa etapa, para cada rodada de revisão analisada, são obtidos a lista de métodos Java submetidos para revisão, os comentários dos revisores e a lista revisada de métodos ressubmetidos pelo autor para abordar alguns dos comentários recebidos.
+
+2.  Abstração dos Códigos: Em seguida, é adotado um processo de abstração para obter uma representação expressiva do código-fonte, porém limitada em termos de vocabulário. Esse processo de abstração é realizado utilizando a ferramenta **src2abs** [2]. Durante a abstração, algumas tripletas podem ser removidos do conjunto de dados caso ocorram erros de análise durante o processo de abstração nos métodos **ms** ou **mr**.
+
+### 2.4 Descrição sobre os métodos
+
+Na análise da semântica do código, utilizamos a métrica BLEU-4 para avaliar a similaridade entre as sequências de código geradas pelos modelos de linguagem e as sequências de código de referência escritas por desenvolvedores humanos - assim como realizado pelo artigo original -. O **BLEU-4 é uma métrica** comumente usada em tarefas de tradução automática para medir a qualidade da tradução gerada. No contexto desse estudo, o BLEU-4 nos permite avaliar o quão bem o modelo de geração de código compreende a semântica das sequências de código de referência.
+
+Além disso, utilizamos a **distância de Levenshtein** - da mesma maneira que o artigo original - para medir a similaridade entre as sequências de código geradas pelo modelo e as sequências de código de referência. A distância de Levenshtein é uma medida que quantifica a diferença entre duas sequências de caracteres. Nesse caso, ela nos ajuda a avaliar o quão próximo as sequências geradas estão das sequências de referência em termos de estrutura e conteúdo.
+
+A seguir, descrevemos a implementação dos métodos utilizados para a análise da semântica e a comparação com as sequências de código de referência.
+
+#### 2.4.1 Método - BLEU 4
 
 ```{r}
 calculate_bleu_score <- function(reference, candidate) {
@@ -254,31 +335,6 @@ calculate_bleu_score <- function(reference, candidate) {
 ```
 
 ```{r}
-# Criação de vetores vazios para armazenar as pontuações BLEU
-bleu_scores <- c()
-
-# Percorre as linhas dos dataframes de referência e candidato
-for (i in 1:nrow(data_k1_raw)) {
-  # Extrai as sentenças de referência e candidato
-  reference_sentence <- unlist(strsplit(as.character(data_k1_raw[i, ]), " "))
-  candidate_sentence <- unlist(strsplit(as.character(data_k1_abstract[i, ]), " "))
-  
-  # Calcula a pontuação BLEU e adiciona ao vetor de pontuações
-  bleu <- calculate_bleu_score(reference_sentence, candidate_sentence)
-  bleu_scores <- c(bleu_scores, bleu)
-}
-
-
-average_bleu <- mean(bleu_scores, na.rm = TRUE)
-median_bleu <- median(bleu_scores, na.rm = TRUE)
-sd_bleu <- sd(bleu_scores, na.rm = TRUE)
-
-cat("Pontuação média do BLEU-4:", average_bleu, "\n")
-cat("Mediana do BLEU-4:", median_bleu, "\n")
-cat("Desvio padrão do BLEU-4:", sd_bleu, "\n")
-```
-
-```{r}
 # Função para calcular o BLEU-4 e imprimir as estatísticas
 calculate_and_print_bleu_stats <- function(reference_data, candidate_data) {
   # Criação de vetor para armazenar as pontuações BLEU
@@ -335,6 +391,104 @@ calculate_and_print_bleu_stats(data_k10_raw, data_k10_abstract)
 cat("\n")
 ```
 
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k1_raw_2 e data_k1_abstract_2
+cat("Estatísticas para data_k1_raw_2 e data_k1_abstract_2:\n")
+calculate_and_print_bleu_stats(data_k1_raw_2, data_k1_abstract_2)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k3_raw_2 e data_k3_abstract_2
+cat("Estatísticas para data_k3_raw_2 e data_k3_abstract_2:\n")
+calculate_and_print_bleu_stats(data_k3_raw_2, data_k3_abstract_2)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k5_raw_2 e data_k5_abstract_2
+cat("Estatísticas para data_k5_raw_2 e data_k5_abstract_2:\n")
+calculate_and_print_bleu_stats(data_k5_raw_2, data_k5_abstract_2)
+cat("\n")
+```
+
+```{r}
+# Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k10_raw_2 e data_k10_abstract_2
+cat("Estatísticas para data_k10_raw_2 e data_k10_abstract_2:\n")
+calculate_and_print_bleu_stats(data_k10_raw_2, data_k10_abstract_2)
+cat("\n")
+```
+
+#### 2.4.2 Distância de Levenshtein
+
+A distância de Levenshtein, também conhecida como distância de edição, é uma medida de similaridade entre duas strings. Ela quantifica o número mínimo de operações necessárias para transformar uma string na outra, onde as operações permitidas são inserção, deleção e substituição de um caractere.
+
+A fórmula matemática da distância de Levenshtein é definida da seguinte maneira:
+
+$$D(s1, s2) = D(len1, len2)$$
+
+**onde**:\
+
+-   **D(s1, s2)** representa a distância de Levenshtein entre as strings s1 e s2, len1 é o comprimento da string s1 e len2 é o comprimento da string s2.
+
+A fórmula da distância de Levenshtein é comumente definida recursivamente. No entanto, em implementações eficientes, como a que usamos anteriormente, a fórmula é otimizada usando uma abordagem de programação dinâmica, que usa uma matriz para armazenar os cálculos intermediários e evitar o recalculo desnecessário. As operações de deleção, inserção e substituição são usadas para calcular o valor de cada posição da matriz. A fórmula geral é a seguinte:
+
+$$
+D(i, j) = min(D(i-1, j) + 1, D(i, j-1) + 1, D(i-1, j-1) + cost)
+$$
+
+**onde:**
+
+-    **D(i, j)** é a distância de Levenshtein entre os prefixos das strings até as posições i e j, e cost é 0 se os caracteres nas posições i e j são iguais e 1 caso contrário.
+
+A distância de Levenshtein total entre as duas strings é o valor armazenado na última posição da matriz. Abaixo implementaremos o método para calcular a similaridade entre a referência e a predição.
+
+```{r}
+calculate_similarity <- function(data_raw, data_abstract, sample_size) {
+  # Gerando uma amostra aleatória de índices
+  sample_indices <- sample.int(nchar(data_raw), size = sample_size, replace = FALSE)
+  
+  # Inicializando a soma das distâncias de Levenshtein
+  total_distance <- 0
+  
+  # Calculando a soma das distâncias de Levenshtein para a amostra
+  for (i in 1:sample_size) {
+    idx <- sample_indices[i]
+    substring_raw <- substr(data_raw, idx, idx)
+    substring_abstract <- substr(data_abstract, idx, idx)
+    distance <- stringdist::stringdist(substring_raw, substring_abstract, method = "lv")
+    total_distance <- total_distance + distance
+  }
+  
+  # Calculando a porcentagem de similaridade
+  percentage_similarity <- (1 - (total_distance / max(nchar(data_raw), nchar(data_abstract)))) * 100
+  
+  return(percentage_similarity)
+}
+
+sample_size <- 100
+```
+
+```{r}
+similarity_k1 <- calculate_similarity(data_k1_raw, data_k1_abstract, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k1_raw, data_k1_abstract)"))
+```
+
+```{r}
+similarity_k3 <- calculate_similarity(data_k3_raw, data_k3_abstract, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k3_raw, data_k3_abstract)"))
+```
+
+```{r}
+similarity_k5 <- calculate_similarity(data_k5_raw, data_k5_abstract, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k5_raw, data_k5_abstract)"))
+```
+
+```{r}
+similarity_k10 <- calculate_similarity(data_k10_raw, data_k10_abstract, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k10_raw, data_k10_abstract)"))
+```
+
 ## 3. Results
 
 **500 words**
@@ -357,7 +511,9 @@ Reflect why your resutls are similar/different from the original study.
 
 **min. 5 scietific references, excluding the replicated paper**
 
-Freese, J., & Peterson, D. (2017). Replication in social science. *Annual Review of Sociology*, 43, 147-165, [doi: 10.1146](https://www.annualreviews.org/doi/abs/10.1146/annurev-soc-060116-053450).
+[1]. "Lizard. [https://github.com/terryyin/lizard/."](https://github.com/terryyin/lizard/.”)
+
+[2]. "src2abs. [https://github.com/micheletufano/src2abs/."](https://github.com/micheletufano/src2abs/.”)
 
 ## Appendix
 
