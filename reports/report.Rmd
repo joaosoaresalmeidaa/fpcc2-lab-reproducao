@@ -24,19 +24,21 @@ library(stringdist)
 
 # Towards Automating Code Review Activities
 
-## 1. Introduction
+## 1. Introdução
 
 O artigo "Towards Automating Code Review Activities" aborda a automação das atividades de revisão de código como um meio de melhorar a eficiência e a qualidade dos processos de desenvolvimento de software. Os autores enfatizam a importância da revisão de código como uma prática fundamental para identificar erros, melhorar a qualidade do código e compartilhar conhecimento entre os membros da equipe de desenvolvimento. As revisões de código desempenham um papel crucial tanto na indústria quanto em projetos de código aberto, com benefícios amplamente reconhecidos, como melhoria da qualidade do código e redução da probabilidade de introdução de bugs. No entanto, esse processo manual requer que os desenvolvedores dediquem tempo revisando o código de seus colegas de equipe.
 
 O objetivo do estudo em questão é dar o primeiro passo para automatizar parcialmente o processo de revisão de código, a fim de reduzir os custos associados a essa atividade. Os pesquisadores se concentraram nas perspectivas do colaborador e do revisor, treinando duas arquiteturas de Deep Learning distintas. O primeiro modelo aprende as alterações de código realizadas pelos desenvolvedores durante as atividades reais de revisão de código, fornecendo ao colaborador uma versão revisada de seu código antes mesmo de ser submetido à revisão. Essa versão incorpora as transformações de código geralmente recomendadas durante as revisões. O segundo modelo fornece automaticamente ao revisor comentários sobre um código submetido, implementando os comentários expressos em linguagem natural por meio de modificações no código.
 
-## 2. Data and methods
+## 2. Metodologia 
 
-### 2.1. Data
+## 3. Reprodução
+
+### 3.1. Dados e métodos
 
 Para obtenção dos dados, os autores seguiram alguns passos, abaixo descreveremos de forma breve o processo:
 
-#### Dados de revisão do código de mineração
+#### 3.1.1 Dados de revisão do código de mineração
 
 Nessa seção, o autor descreve o processo de mineração de dados de revisão de código no Gerrit e no GitHub. O objetivo desse processo de mineração é coletar todas as informações que representam as rodadas de revisão de código realizadas no Gerrit e no GitHub.
 
@@ -46,7 +48,7 @@ Para realizar essa tarefa, foram desenvolvidas duas ferramentas de mineração e
 
 A saída deste processo é representada, para cada revisão rodada, por **(i)** o conjunto de arquivos de código enviados para revisão, **(ii)** os comentários recebidos neste código arquivos com informações sobre as linhas impactadas específicas (informações em nível de personagem está disponível para Gerrit), e **(iii)** os arquivos de código revisados ​​enviados em resposta aos comentários recebidos. [1]
 
-#### Pré-processamento de dados
+#### 3.1.2 Pré-processamento de dados
 
 Nessa etapa de pré-processamento de dados, o autor descreve os seguintes processos:
 
@@ -58,7 +60,7 @@ Nessa etapa de pré-processamento de dados, o autor descreve os seguintes proces
 
 Após esses processos, o autor obteve conjuntos de tripelas **(hms, rnli → mr)** e pares **(ms → mr)** que serão utilizados nos modelos de aprendizado profundo. As tripletas representam um método antes da revisão **(ms)**, os comentários dos revisores **(rnli)** e o método revisado **(mr)**, enquanto os pares representam apenas o método antes e depois da revisão. Comentários irrelevantes e ruidosos foram removidos para minimizar o ruído fornecido aos modelos de aprendizado profundo.
 
-#### Automatizando a Revisão de Código
+#### 3.1.3 Automatizando a Revisão de Código
 
 Nessa etapa de automatização da revisão, o autor descreve os seguintes processos:
 
@@ -118,7 +120,7 @@ Nessa etapa de automatização da revisão, o autor descreve os seguintes proces
 
 Esses procedimentos visam automatizar o processo de revisão de código, treinando modelos de transformer para sugerir mudanças no código com base nos comentários do revisor e gerar exemplos práticos das modificações de código desejadas.
 
-### 2.2. Leitura dos arquivos gerados
+### 3.2. Leitura dos arquivos gerados
 
 Abaixo iremos realizar a leitura dos arquivos gerados, após realizar o treinamento do modelo.
 
@@ -234,17 +236,17 @@ print(response_k10_raw_2, row.names = FALSE)
 print(response_k10_abstract_2, row.names = FALSE)
 ```
 
-### 2.3. Métodos
+### 3.3 Métodos
 
 Para reproduzir o estudo, foi necessário configurar o projeto em minha máquina e seguir as etapas:
 
-1.  Configuração do arquivo **data.yml**: Ajustei as configurações do arquivo *data.yml* de acordo com os melhores hiperparâmetros sugeridos no **artigo** original.
+1.  Configuração do arquivo **data.yml**: Ajustei as configurações do arquivo ***data.yml*** de acordo com os melhores hiperparâmetros sugeridos no **artigo** original.
 
-2.  Execução do script de treinamento: Na pasta "**1-encoder**", executei o script *training.py*. Esse script é responsável pelo treinamento do modelo com os dados fornecidos.
+2.  Execução do script de treinamento: Na pasta "**1-encoder**", executei o script ***training.py***. Esse script é responsável pelo treinamento do modelo com os dados fornecidos.
 
 3.  Geração da pasta "**run**": Após o treinamento, uma pasta chamada "run" foi gerada. Essa pasta contém os dados e informações relevantes para o treinamento realizado.
 
-4.  Em seguida, executamos o script *infer.py* para gerar os arquivos de predições.
+4.  Em seguida, executamos o script ***infer.py*** para gerar os arquivos de predições.
 
 Essas mesmas etapas foram utilizadas para a pasta **2-encoder**. Abaixo ilustraremos o que os scripts fazem.
 
@@ -256,7 +258,7 @@ Aqui estão os passos específicos desse pré-processamento:
 
 2.  Abstração dos Códigos: Em seguida, é adotado um processo de abstração para obter uma representação expressiva do código-fonte, porém limitada em termos de vocabulário. Esse processo de abstração é realizado utilizando a ferramenta **src2abs** [2]. Durante a abstração, algumas tripletas podem ser removidos do conjunto de dados caso ocorram erros de análise durante o processo de abstração nos métodos **ms** ou **mr**.
 
-### 2.4 Descrição sobre os métodos
+#### 3.3.1 Descrição sobre os métodos
 
 Na análise da semântica do código, utilizamos a métrica BLEU-4 para avaliar a similaridade entre as sequências de código geradas pelos modelos de linguagem e as sequências de código de referência escritas por desenvolvedores humanos - assim como realizado pelo artigo original -. O **BLEU-4 é uma métrica** comumente usada em tarefas de tradução automática para medir a qualidade da tradução gerada. No contexto desse estudo, o BLEU-4 nos permite avaliar o quão bem o modelo de geração de código compreende a semântica das sequências de código de referência.
 
@@ -264,7 +266,7 @@ Além disso, utilizamos a **distância de Levenshtein** - da mesma maneira que o
 
 A seguir, descrevemos a implementação dos métodos utilizados para a análise da semântica e a comparação com as sequências de código de referência.
 
-#### 2.4.1 Método - BLEU 4
+#### 3.3.1 Método - BLEU 4
 
 ```{r}
 calculate_bleu_score <- function(reference, candidate) {
@@ -360,66 +362,180 @@ calculate_and_print_bleu_stats <- function(reference_data, candidate_data) {
   cat("Pontuação média do BLEU-4:", average_bleu, "\n")
   cat("Mediana do BLEU-4:", median_bleu, "\n")
   cat("Desvio padrão do BLEU-4:", sd_bleu, "\n")
+  
+  return(list(media = average_bleu, mediana = median_bleu, desvio_padrao = sd_bleu))
 }
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k1_raw e data_k1_abstract
 cat("Estatísticas para data_k1_raw e data_k1_abstract:\n")
-calculate_and_print_bleu_stats(data_k1_raw, data_k1_abstract)
+bleu_stats_k1 <- calculate_and_print_bleu_stats(data_k1_raw, data_k1_abstract)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k1))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K1 (1-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k3_raw e data_k3_abstract
 cat("Estatísticas para data_k3_raw e data_k3_abstract:\n")
-calculate_and_print_bleu_stats(data_k3_raw, data_k3_abstract)
+bleu_stats_k3 <- calculate_and_print_bleu_stats(data_k3_raw, data_k3_abstract)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k3))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K1 (1-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k5_raw e data_k5_abstract
 cat("Estatísticas para data_k5_raw e data_k5_abstract:\n")
-calculate_and_print_bleu_stats(data_k5_raw, data_k5_abstract)
+bleu_stats_k5 <- calculate_and_print_bleu_stats(data_k5_raw, data_k5_abstract)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k5))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K1 (1-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k10_raw e data_k10_abstract
 cat("Estatísticas para data_k10_raw e data_k10_abstract:\n")
-calculate_and_print_bleu_stats(data_k10_raw, data_k10_abstract)
+bleu_stats_k10 <- calculate_and_print_bleu_stats(data_k10_raw, data_k10_abstract)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k10))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K1 (1-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k1_raw_2 e data_k1_abstract_2
 cat("Estatísticas para data_k1_raw_2 e data_k1_abstract_2:\n")
-calculate_and_print_bleu_stats(data_k1_raw_2, data_k1_abstract_2)
+bleu_stats_k1_2 <- calculate_and_print_bleu_stats(data_k1_raw_2, data_k1_abstract_2)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k1_2))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K1 (2-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k3_raw_2 e data_k3_abstract_2
 cat("Estatísticas para data_k3_raw_2 e data_k3_abstract_2:\n")
-calculate_and_print_bleu_stats(data_k3_raw_2, data_k3_abstract_2)
+bleu_stats_k3_2 <- calculate_and_print_bleu_stats(data_k3_raw_2, data_k3_abstract_2)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k3_2))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K3 (2-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k5_raw_2 e data_k5_abstract_2
 cat("Estatísticas para data_k5_raw_2 e data_k5_abstract_2:\n")
-calculate_and_print_bleu_stats(data_k5_raw_2, data_k5_abstract_2)
+bleu_stats_k5_2 <- calculate_and_print_bleu_stats(data_k5_raw_2, data_k5_abstract_2)
 cat("\n")
+```
+
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k5_2))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K5 (2-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
 # Calcula e imprime as estatísticas do BLEU-4 para o par de arquivos data_k10_raw_2 e data_k10_abstract_2
 cat("Estatísticas para data_k10_raw_2 e data_k10_abstract_2:\n")
-calculate_and_print_bleu_stats(data_k10_raw_2, data_k10_abstract_2)
+bleu_stats_k10_2 <- calculate_and_print_bleu_stats(data_k10_raw_2, data_k10_abstract_2)
 cat("\n")
 ```
 
-#### 2.4.2 Distância de Levenshtein
+```{r}
+# Cria um data frame com as estatísticas
+df <- data.frame(Estatistica = c("Média", "Mediana", "Desvio Padrão"),
+                 Valor = unlist(bleu_stats_k10_2))
+
+# Plotar o gráfico de barras
+ggplot(df, aes(x = Estatistica, y = Valor)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(x = "", y = "Valor", title = "K10 (2-encoder)") +
+  ylim(0, 1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 3.3.3 Método - Distância de Levenshtein
 
 A distância de Levenshtein, também conhecida como distância de edição, é uma medida de similaridade entre duas strings. Ela quantifica o número mínimo de operações necessárias para transformar uma string na outra, onde as operações permitidas são inserção, deleção e substituição de um caractere.
 
@@ -439,7 +555,7 @@ $$
 
 **onde:**
 
--    **D(i, j)** é a distância de Levenshtein entre os prefixos das strings até as posições i e j, e cost é 0 se os caracteres nas posições i e j são iguais e 1 caso contrário.
+-   **D(i, j)** é a distância de Levenshtein entre os prefixos das strings até as posições i e j, e cost é 0 se os caracteres nas posições i e j são iguais e 1 caso contrário.
 
 A distância de Levenshtein total entre as duas strings é o valor armazenado na última posição da matriz. Abaixo implementaremos o método para calcular a similaridade entre a referência e a predição.
 
@@ -475,9 +591,36 @@ print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k1_raw,
 ```
 
 ```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k1)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K1 (1-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
 similarity_k3 <- calculate_similarity(data_k3_raw, data_k3_abstract, sample_size)
 print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k3_raw, data_k3_abstract)"))
 ```
+
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k3)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K3 (1-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+\
 
 ```{r}
 similarity_k5 <- calculate_similarity(data_k5_raw, data_k5_abstract, sample_size)
@@ -485,11 +628,103 @@ print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k5_raw,
 ```
 
 ```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k5)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K5 (1-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
 similarity_k10 <- calculate_similarity(data_k10_raw, data_k10_abstract, sample_size)
 print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k10_raw, data_k10_abstract)"))
 ```
 
-## 3. Results
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k10)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K10 (1-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+similarity_k1_2_encoder <- calculate_similarity(data_k1_raw_2, data_k1_abstract_2, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k1_raw_2, data_k1_abstract_2)"))
+```
+
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k1_2_encoder)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K1 (2-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+similarity_k3_2_encoder <- calculate_similarity(data_k3_raw_2, data_k3_abstract_2, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k3_raw_2, data_k3_abstract_2)"))
+```
+
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k3_2_encoder)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K10 (2-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+similarity_k5_2_encoder <- calculate_similarity(data_k5_raw_2, data_k5_abstract_2, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k5_raw_2, data_k5_abstract_2)"))
+```
+
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k5_2_encoder)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K5 (2-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+similarity_k10_2_encoder <- calculate_similarity(data_k10_raw_2, data_k10_abstract_2, sample_size)
+print(paste("Tivemos", round(similarity, 2), "% de similaridade. | (data_k10_raw_2, data_k10_abstract_2)"))
+```
+
+```{r}
+# Criando um data frame com os valores de similaridade e índices
+df <- data.frame(Index = 1:sample_size, Similaridade = similarity_k10_2_encoder)
+
+ggplot(df, aes(x = Index, y = Similaridade)) +
+  geom_point(size = 3) +
+  labs(x = "Amostra K10 (2-encoder)", y = "Similaridade") +
+  ggtitle("Gráfico de Dispersão de Similaridade (Levenshtein)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## 3. Resultados
 
 **500 words**
 
@@ -499,7 +734,7 @@ Show code and outputs.
 
 Provide interpretation of your results.
 
-## 4. Conclusions
+## 4. Conclusões
 
 **200 words**
 
@@ -507,16 +742,10 @@ Dicuss you findings in the light of literature.
 
 Reflect why your resutls are similar/different from the original study.
 
-## References
+## Referências
 
 **min. 5 scietific references, excluding the replicated paper**
 
 [1]. "Lizard. [https://github.com/terryyin/lizard/."](https://github.com/terryyin/lizard/.”)
 
 [2]. "src2abs. [https://github.com/micheletufano/src2abs/."](https://github.com/micheletufano/src2abs/.”)
-
-## Appendix
-
-### Appendix 1
-
-Appendices can be used to display any additional information or results which do not constitute the core analysis in your paper.
