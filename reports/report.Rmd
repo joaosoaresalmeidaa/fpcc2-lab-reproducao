@@ -22,13 +22,14 @@ library(textTinyR)
 library(stringdist)
 library(ggplot2)
 library(tidyverse)
+library(gt)
 ```
 
 # Towards Automating Code Review Activities
 
 ## 1. Introdução
 
-O artigo ***T*****owards Automating Code Review Activities [3]** aborda a automação das atividades de revisão de código como um meio de melhorar a eficiência e a qualidade dos processos de desenvolvimento de software. Os autores enfatizam a importância da revisão de código como uma prática fundamental para identificar erros, melhorar a qualidade do código e compartilhar conhecimento entre os membros da equipe de desenvolvimento. As revisões de código desempenham um papel crucial tanto na indústria quanto em projetos de código aberto, com benefícios amplamente reconhecidos, como melhoria da qualidade do código e redução da probabilidade de introdução de bugs.
+O artigo ***T*****owards Automating Code Review Activities [3]** aborda a automação das atividades de revisão de código como um meio de melhorar a eficiência e a qualidade dos processos de desenvolvimento de *software*. Os autores enfatizam a importância da revisão de código como uma prática fundamental para identificar erros, melhorar a qualidade do código e compartilhar conhecimento entre os membros da equipe de desenvolvimento. As revisões de código desempenham um papel crucial tanto na indústria quanto em projetos de código aberto, com benefícios amplamente reconhecidos, como melhoria da qualidade do código e redução da probabilidade de introdução de bugs.
 
 No entanto, esse processo manual requer que os desenvolvedores dediquem tempo revisando o código de seus colegas de equipe, o que pode ser uma tarefa demorada e suscetível a erros humanos. Nesse contexto, a automação parcial do processo de revisão de código surge como uma abordagem promissora para mitigar esses desafios. Ao empregar técnicas de aprendizado de máquina e processamento de linguagem natural, é possível desenvolver sistemas capazes de auxiliar os desenvolvedores e revisores durante o processo de revisão de código.
 
@@ -36,7 +37,7 @@ O objetivo do estudo em questão é dar o primeiro passo para automatizar parcia
 
 Ao automatizar parcialmente o processo de revisão de código, espera-se que os desenvolvedores e revisores economizem tempo e esforço, permitindo que se concentrem em tarefas de maior valor agregado. Além disso, a automação pode contribuir para uma maior uniformidade na aplicação de práticas recomendadas de revisão de código e proporcionar uma experiência mais consistente e eficiente para toda a equipe de desenvolvimento.
 
-Portanto, o estudo visa explorar as possibilidades oferecidas pela automação parcial da revisão de código, avaliar a eficácia das arquiteturas de *Deep Learning* propostas e fornecer insights valiosos para futuros avanços nessa área. O avanço na automação das atividades de revisão de código tem o potencial de revolucionar a maneira como o desenvolvimento de *software* é conduzido, impulsionando a eficiência, a qualidade e a colaboração no processo de desenvolvimento.
+Portanto, o estudo visa explorar as possibilidades oferecidas pela automação parcial da revisão de código, avaliar a eficácia das arquiteturas de *Deep Learning* propostas e fornecer *ideias* valiosos para futuros avanços nessa área. O avanço na automação das atividades de revisão de código tem o potencial de revolucionar a maneira como o desenvolvimento de *software* é conduzido, impulsionando a eficiência, a qualidade e a colaboração no processo de desenvolvimento.
 
 ## 2. Metodologia
 
@@ -44,21 +45,21 @@ Nesta seção, descreveremos a metodologia adotada para avaliar a qualidade das 
 
 ### **2.1. Objetivo da Avaliação**
 
-O principal objetivo desta avaliação é medir a qualidade das abstrações geradas pelo sistema de automação de revisão de código descrito no artigo. Pretende-se comparar o desempenho do sistema utilizando os métodos *BLEU-4* e *Distância de Levenshtein*, identificar possíveis discrepâncias dos métodos de avaliação.
+O principal objetivo desta avaliação é medir a qualidade das abstrações geradas pelo sistema de automação de revisão de código descrito no artigo [3]. Pretende-se comparar o desempenho do sistema utilizando os métodos *BLEU-4* e *Distância de Levenshtein*, identificar possíveis discrepâncias dos métodos de avaliação e verificar qual sistema tem um resultado melhor dado um conjunto de dados para ser analisado.
 
 ### **2.2 Definição do Escopo**
 
-Para restringir-se ao escopo da avaliação, focaremos no sistema de revisão de código mencionado no artigo. Utilizaremos um conjunto de dados de referência contendo os códigos para fins de comparação com as abstrações geradas pelo sistema.
+Para restringir-se ao escopo da avaliação, focaremos no sistema de revisão de código mencionado no artigo [3]. Utilizaremos um conjunto de dados de referência - disponibilizado pelos autores no Github - contendo os códigos para fins de comparação com as abstrações geradas pelo sistema.
 
 ### **2.3 Conjunto de Dados**
 
-Selecionaremos o conjunto de dados adequado para a avaliação - disponibilizado no repositório dos autores -, considerando um conjunto representativo de sentenças ou textos que abranjam diferentes contextos e níveis de complexidade.
+Selecionaremos o conjunto de dados adequado para a avaliação - disponibilizado no repositório hospedado no Github [4] dos autores -, considerando um conjunto representativo de sentenças ou textos que abranjam diferentes contextos e níveis de complexidade.
 
 ### **2.4 Avaliação com o Método BLEU-4**
 
-Aplicaremos o método BLEU (Bilingual Evaluation Understudy) para avaliar a qualidade das traduções geradas pelo sistema de tradução automática. Seguiremos as seguintes etapas:
+Aplicaremos o método BLEU (*Bilingual Evaluation Understudy*) [8] para avaliar a qualidade das traduções geradas pelo sistema de tradução automática. Seguiremos as seguintes etapas:
 
-2.4.1 Cálculo da Pontuação BLEU
+**2.4.1 Cálculo da Pontuação BLEU**
 
 Utilizaremos uma implementação construída em R para calcular a pontuação *BLEU* para cada tradução em relação ao conjunto de referência. A pontuação *BLEU* será uma medida numérica - em porcentagem - que indica a similaridade entre as traduções geradas e as traduções de referência.
 
@@ -68,7 +69,7 @@ Analisaremos as pontuações BLEU obtidas para cada tradução, levando em consi
 
 ### **2.5 Avaliação com o Método** *Levenshtein Distance*
 
-Aplicaremos o método *LEV (Levenshtein Distance)* para avaliar a qualidade das traduções geradas pelo sistema de tradução automática. Seguiremos as seguintes etapas:
+Aplicaremos o método *LEV (Levenshtein Distance)* [7] para avaliar a qualidade das traduções geradas pelo sistema de tradução automática. Seguiremos as seguintes etapas:
 
 **2.5.1 Cálculo da Distância *Levenshtein***
 
@@ -90,7 +91,7 @@ Para obtenção dos dados, os autores seguiram alguns passos, abaixo descreverem
 
 #### 3.1.1 Dados de revisão do código de mineração
 
-Nessa seção, o autor descreve o processo de mineração de dados de revisão de código no Gerrit e no GitHub. O objetivo desse processo de mineração é coletar todas as informações que representam as rodadas de revisão de código realizadas no Gerrit e no GitHub.
+Nessa seção, o autor descreve o processo de mineração de dados de revisão de código no Gerrit e no GitHub [4]. O objetivo desse processo de mineração é coletar todas as informações que representam as rodadas de revisão de código realizadas no Gerrit [5] e no GitHub.
 
 Para realizar essa tarefa, foram desenvolvidas duas ferramentas de mineração específicas para consultar sistematicamente as APIs públicas do Gerrit e do GitHub. Essa implementação dupla é necessária porque, embora ambas as plataformas forneçam suporte semelhante para revisão de código, as APIs públicas usadas para recuperar os dados são diferentes.
 
@@ -102,7 +103,7 @@ A saída deste processo é representada, para cada revisão rodada, por **(i)** 
 
 Nessa etapa de pré-processamento de dados, o autor descreve os seguintes processos:
 
-1.  **Extração e Abstração de Métodos**: Os arquivos Java envolvidos no processo de revisão são analisados usando a biblioteca Python Lizard. O objetivo dessa etapa é extrair os métodos de todos os arquivos. Em seguida, é adotado um processo de abstração para obter uma representação expressiva, mas limitada em vocabulário, do código-fonte. Esse processo de abstração é realizado usando a ferramenta src2abs e mapeia os tokens abstraídos aos tokens originais, permitindo voltar ao código-fonte original.
+1.  **Extração e Abstração de Métodos**: Os arquivos Java envolvidos no processo de revisão são analisados usando a biblioteca Python Lizard. O objetivo dessa etapa é extrair os métodos de todos os arquivos. Em seguida, é adotado um processo de abstração para obter uma representação expressiva, mas limitada em vocabulário, do código-fonte. Esse processo de abstração é realizado usando a ferramenta **src2abs** e mapeia os tokens abstraídos aos tokens originais, permitindo voltar ao código-fonte original.
 
 2.  **Vinculação e Abstração de Comentários dos Revisores**: Cada comentário do revisor é associado às linhas de código específicas às quais se refere. Os comentários são vinculados a um método se as linhas de início e fim do comentário estiverem dentro do corpo, da assinatura ou das anotações desse método. Os comentários que não podem ser vinculados a nenhum método são descartados. Além disso, os componentes de código mencionados nos comentários são abstraídos usando o mapa de abstração obtido na etapa anterior.
 
@@ -595,9 +596,6 @@ cat("Desvio padrão do Levenshtein:", similarity_k1_2_encoder$sd_similarity, "\n
 ```
 
 ```{r}
-```
-
-```{r}
 similarity_k3_2_encoder <- calculate_similarity_stats(data_k3_raw_2, data_k3_abstract_2, sample_size)
 
 cat("Pontuação média do Levenshtein:", similarity_k3_2_encoder$mean_similarity, "\n")
@@ -606,17 +604,11 @@ cat("Desvio padrão do Levenshtein:", similarity_k3_2_encoder$sd_similarity, "\n
 ```
 
 ```{r}
-```
-
-```{r}
 similarity_k5_2_encoder <- calculate_similarity_stats(data_k5_raw_2, data_k5_abstract_2, sample_size)
 
 cat("Pontuação média do Levenshtein:", similarity_k5_2_encoder$mean_similarity, "\n")
 cat("Mediana do Levenshtein:", similarity_k5_2_encoder$median_similarity, "\n")
 cat("Desvio padrão do Levenshtein:", similarity_k5_2_encoder$sd_similarity, "\n")
-```
-
-```{r}
 ```
 
 ```{r}
@@ -649,28 +641,105 @@ ggplot(df, aes(x = Etapa, y = Similaridade.mean_similarity)) +
 
 ## 3. Resultados
 
-**500 words**
+Nesta seção, apresentaremos e discutiremos os resultados obtidos em nossa reprodução. Realizamos uma análise detalhada para responder às seguintes perguntas de pesquisa:
 
-Display and describe your research results step by step.
+1.  **RQ1: Em que medida a tradução automática neural (NMT) é uma abordagem viável para recomendar automaticamente mudanças de código como os revisores fariam?**
 
-Show code and outputs.
+2.  **RQ2: Em que medida a tradução automática neural (NMT) é uma abordagem viável para implementar automaticamente as alterações recomendadas pelos revisores?**
 
-Provide interpretation of your results.
+Para responder a essas perguntas, realizamos experimentos usando dois sistemas diferentes: Sistema 1 e Sistema 2. Analisamos os resultados obtidos para métricas de avaliação, como ***BLEU-4 e Distância de Levenshtein***.
+
+### **3.1 Métricas de Avaliação**
+
+Para as métricas de avaliação, consideramos o desempenho dos sistemas em diferentes tamanhos de feixe (beam sizes), como K1, K3, K5 e K10. Aqui estão os resultados para as métricas BLEU-4 e Distância de Levenshtein para ambos os sistemas:
+
+```{r}
+# Dados dos resultados
+resultados <- data.frame(
+  Sistema = rep(c("1-encoder", "2-encoder"), each = 8),
+  Beam_Size = c(rep(c("K1", "K3", "K5", "K10"), 2)),
+  Metrica = rep(c("BLEU-4", "Levenshtein"), each = 4),
+  Media = c(0.3001454, 0.3123734, 0.2528003, 0.1946505,
+            99.99994, 99.99996, 99.99997, 99.99998),
+  Mediana = c(0.0718896, 0.154933, 0, 0,
+              99.99993, 99.99996, 99.99997, 99.99998),
+  Desvio_Padrao = c(0.3322375, 0.3427636, 0.3158493, 0.294314,
+                    1.425149e-05, 6.80953e-06, 5.683657e-06, 2.335834e-06)
+)
+
+# Criação da tabela com o pacote gt
+tabela <- gt(resultados) %>%
+  tab_header(
+    title = "Resultados",
+    subtitle = "Análise dos resultados obtidos"
+  ) %>%
+  cols_label(Sistema = "Sistema",
+             Beam_Size = "Beam Size",
+             Metrica = "Métrica",
+             Media = "Média",
+             Mediana = "Mediana",
+             Desvio_Padrao = "Desvio Padrão") %>%
+  tab_spanner(
+    label = "Métrica",
+    columns = c("Metrica", "Media", "Mediana", "Desvio_Padrao")
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(weight = "bold"),
+      cell_fill(color = "#F0F0F0")
+    ),
+    locations = cells_body(
+      columns = c("Sistema", "Beam_Size", "Metrica", "Media", "Mediana", "Desvio_Padrao")
+    )
+  ) %>%
+  tab_options(
+    column_labels.font.size = px(11),
+    table.font.size = px(11),
+    table.border.top.width = px(1),
+    table.border.bottom.width = px(1),
+    table.border.left.width = px(1),
+    table.border.right.width = px(1)
+  )
+
+# Exibição da tabela
+tabela
+
+```
+
+### **3.2 Interpretação dos Resultados**
+
+Para responder à **Q1**, examinamos o desempenho dos sistemas e tamanhos de feixe (beam sizes) na métrica *BLEU-4*. Observamos pontuações relativamente mais altas no **Sistema 1**, indicando uma melhor capacidade de recomendar mudanças de código como os revisores fariam **(Tufano et al., 2021)**. No entanto, as pontuações de *BLEU-4* diminuem à medida que o tamanho do feixe aumenta. Por outro lado, no **Sistema 2**, as pontuações de *BLEU-4* são muito baixas em comparação com o **Sistema 1**, sugerindo dificuldades em recomendar mudanças de código de maneira precisa e semelhante aos revisores **(Tufano et al., 2021)**.
+
+Em relação à **Q2**, analisamos a métrica de Distância de *Levenshtein* para avaliar a implementação automática das alterações recomendadas pelos revisores. Ambos os sistemas obtiveram pontuações muito altas nessa métrica, indicando uma grande divergência entre as mudanças recomendadas e as alterações feitas pelos revisores (**Tufano et al., 2021)**. Isso sugere limitações tanto no **Sistema 1** quanto no **Sistema 2** na implementação automática de alterações recomendadas.
+
+### **3.3 Limitações**
+
+É importante destacar as seguintes limitações encontradas durante a realização deste estudo:
+
+1.  **Poder computacional**: A reprodução dos experimentos foi realizada em uma máquina com poder computacional inferior ao utilizado no artigo original. Isso pode ter impactado os resultados e as métricas obtidas, uma vez que a capacidade de processamento pode influenciar o desempenho dos modelos de tradução automática neural.
+
+2.  **Amostra limitada para o método de Distância de *Levenshtein***: Devido às restrições de memória da máquina utilizada, foi necessário analisar uma amostra limitada dos dados para calcular a métrica de Distância de *Levenshtein*. A utilização da amostra completa poderia causar estouro de memória. Portanto, os resultados obtidos podem não ser totalmente representativos do desempenho real dos sistemas.
+
+3.  **Falta de clareza nas informações do artigo**: Durante a reprodução, encontramos algumas questões não esclarecidas no artigo original. Um exemplo é a falta de informações claras sobre como o autor calculou a referência de predição perfeita em relação aos resultados gerados pelos sistemas. Essa falta de clareza dificultou a avaliação completa da eficácia dos sistemas em
+
+Essas limitações ressaltam a importância de futuros estudos para aprimorar a reprodução e o entendimento dos resultados, bem como a necessidade de informações mais detalhadas e claras nos artigos científicos para facilitar a replicação dos experimentos.
 
 ## 4. Conclusões
 
-**200 words**
-
-Dicuss you findings in the light of literature.
-
-Reflect why your resutls are similar/different from the original study.
+Com base nos resultados obtidos, podemos concluir que o **Sistema 1**, com determinados tamanhos de feixe, apresenta uma abordagem mais viável para recomendar automaticamente mudanças de código como os revisores fariam. No entanto, ambos os sistemas mostraram limitações significativas na implementação automática das alterações recomendadas. São necessários mais estudos e melhorias nos modelos de tradução automática neural para aprimorar a capacidade de implementação automática das alterações recomendadas pelos revisores de código.
 
 ## Referências
-
-**min. 5 scietific references, excluding the replicated paper**
 
 [1]. "Lizard. [https://github.com/terryyin/lizard/."](https://github.com/terryyin/lizard/.”)
 
 [2]. "src2abs. [https://github.com/micheletufano/src2abs/."](https://github.com/micheletufano/src2abs/.”)
 
 [3]. "Towards Automating Code Review Activities. <https://arxiv.org/pdf/2101.02518.pdf>"
+
+[4]. "Github. [https://github.com/."](https://github.com/.”)
+
+[5]. "Gerrit. <https://www.gerritcodereview.com>"
+
+[6]. V. Levenshtein, "Binary Codes Capable of Correcting Deletions, Insertions and Reversals," Soviet Physics Doklady, vol. 10, p. 707, 1966.
+
+[7] K. Papineni, S. Roukos, T. Ward, and W.-J. Zhu, "Bleu: A method for automatic evaluation of machine translation," in Proceedings of the 40th Annual Meeting on Association for Computational Linguistics, ser. ACL '02, 2002, pp. 311--318.
